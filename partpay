@@ -180,9 +180,7 @@ for line in sys.stdin:
         start_min, end_min, rest
     )
 
-    pay = normal * wage / 60
-    pay += single * wage * 1.25 / 60
-    pay += double * wage * 1.5 / 60
+    pay = (normal * 4 + single * 5 + double * 6) * wage
 
     pays.append(pay)
 
@@ -190,7 +188,7 @@ if len(pays) == 0:
     error("入力がありません")
 
 if args.total:
-    print(int(sum(pays)))
+    print((sum(pays) + 120) // 240)
 else:
     for pay in pays:
-        print(int(pay))
+        print((pay + 120) // 240)

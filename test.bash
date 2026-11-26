@@ -108,7 +108,7 @@ out=$(echo "5:00 6:00" | ./partpay)
 
 out=$(echo "21:59 22:01" | ./partpay)
 [ "$?" = 0 ] || ng "$LINENO"
-[ "${out}" = 52 ] || ng "$LINENO"
+[ "${out}" = 53 ] || ng "$LINENO"
 
 # 不正入力
 for input in "abc def" "a:00 18:00" "9:00" \
@@ -146,7 +146,7 @@ out=$(echo "18:00 2:00" | ./partpay)
 
 out=$(echo "22:00 5:00" | ./partpay)
 [ "$?" = 0 ] || ng "$LINENO"
-[ "${out}" = 10937 ] || ng "$LINENO"
+[ "${out}" = 10938 ] || ng "$LINENO"
 
 out=$(echo "23:00 6:00" | ./partpay)
 [ "$?" = 0 ] || ng "$LINENO"
@@ -305,6 +305,27 @@ out=$(printf "\n\n" | ./partpay 2>/dev/null)
 out=$(printf "" | ./partpay -t 2>/dev/null)
 [ "$?" = 1 ] || ng "$LINENO"
 [ "${out}" = "" ] || ng "$LINENO"
+
+
+# 0.5円未満の切り捨て
+out=$(echo "9:00 9:01" | ./partpay)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 23 ] || ng "$LINENO"
+
+# 0.5円を切り上げる
+out=$(echo "9:00 9:01" | ./partpay -w 1230)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 21 ] || ng "$LINENO"
+
+# 0.5円を超える端数の切り上げ
+out=$(echo "9:00 9:02" | ./partpay)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 47 ] || ng "$LINENO"
+
+# 合計金額の四捨五入
+out=$(printf "9:00 9:01\n9:00 9:01\n" | ./partpay -t)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 47 ] || ng "$LINENO"
 
 [ "${res}" = 0 ] && echo OK
 exit $res
