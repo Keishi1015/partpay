@@ -54,15 +54,30 @@ out=$(echo "9:00 17:46" | ./partpay)
 [ "$?" = 0 ]        || ng "$LINENO"
 [ "${out}" = 10873 ] || ng "$LINENO"
 
-# 9時間勤務（拘束時間）
+# 実労働時間8時間
 out=$(echo "9:00 18:00" | ./partpay)
 [ "$?" = 0 ]        || ng "$LINENO"
 [ "${out}" = 11200 ] || ng "$LINENO"
 
-# 10時間勤務（拘束時間）
+# 残業1分
+out=$(echo "9:00 18:01" | ./partpay)
+[ "$?" = 0 ]        || ng "$LINENO"
+[ "${out}" = 11229 ] || ng "$LINENO"
+
+# 残業1時間
 out=$(echo "9:00 19:00" | ./partpay)
 [ "$?" = 0 ]        || ng "$LINENO"
-[ "${out}" = 12600 ] || ng "$LINENO"
+[ "${out}" = 12950 ] || ng "$LINENO"
+
+# 残業2時間
+out=$(echo "9:00 20:00" | ./partpay)
+[ "$?" = 0 ]        || ng "$LINENO"
+[ "${out}" = 14700 ] || ng "$LINENO"
+
+# 残業を含む複数日の勤務
+out=$(printf "9:00 19:00\n9:00 20:00\n" | ./partpay)
+[ "$?" = 0 ]        || ng "$LINENO"
+[ "${out}" = 27650 ] || ng "$LINENO"
 
 [ "${res}" = 0 ] && echo OK
 exit $res

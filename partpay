@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Keishi Yonezawa
 # SPDX-License-Identifier: BSD-3-Clause
+
 import sys
 
 wage = 1400
@@ -25,7 +26,16 @@ for line in sys.stdin:
         rest = 60
 
     work_min = span - rest
-    pay = work_min / 60 * wage
+
+    if work_min > 8 * 60:
+        normal_min = 8 * 60
+        overtime_min = work_min - 8 * 60
+    else:
+        normal_min = work_min
+        overtime_min = 0
+
+    pay = normal_min / 60 * wage
+    pay += overtime_min / 60 * wage * 1.25
 
     total += pay
 
