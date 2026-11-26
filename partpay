@@ -15,7 +15,16 @@ for line in sys.stdin:
     start_min = int(start[0]) * 60 + int(start[1])
     end_min = int(end[0]) * 60 + int(end[1])
 
-    work_min = end_min - start_min
+    span = end_min - start_min
+
+    if span <= 6 * 60:
+        rest = 0
+    elif span <= 8 * 60 + 45:
+        rest = 45
+    else:
+        rest = 60
+
+    work_min = span - rest
     pay = work_min / 60 * wage
 
     total += pay
