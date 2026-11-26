@@ -275,5 +275,36 @@ out=$(printf "9:00 18:00 60\n10:00 15:00 0\n" | ./partpay -w 1500 -t)
 [ "$?" = 0 ] || ng "$LINENO"
 [ "${out}" = 19500 ] || ng "$LINENO"
 
+
+# 小数の計算誤差
+out=$(echo "9:00 9:21" | ./partpay)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 490 ] || ng "$LINENO"
+
+# 入力が空の場合
+out=$(printf "" | ./partpay 2>/dev/null)
+[ "$?" = 1 ] || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 最後に空行がある場合
+out=$(printf "9:00 10:00\n\n" | ./partpay)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 1400 ] || ng "$LINENO"
+
+# 途中に空行がある場合
+out=$(printf "9:00 10:00\n\n10:00 12:00\n" | ./partpay -t)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 4200 ] || ng "$LINENO"
+
+# 空行のみの場合
+out=$(printf "\n\n" | ./partpay 2>/dev/null)
+[ "$?" = 1 ] || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 合計オプションで入力が空の場合
+out=$(printf "" | ./partpay -t 2>/dev/null)
+[ "$?" = 1 ] || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
 [ "${res}" = 0 ] && echo OK
 exit $res

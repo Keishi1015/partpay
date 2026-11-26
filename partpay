@@ -136,6 +136,10 @@ lineno = 0
 
 for line in sys.stdin:
     lineno += 1
+
+    if line.strip() == "":
+        continue
+
     times = line.strip().split()
 
     if len(times) != 2 and len(times) != 3:
@@ -176,11 +180,14 @@ for line in sys.stdin:
         start_min, end_min, rest
     )
 
-    pay = normal / 60 * wage
-    pay += single / 60 * wage * 1.25
-    pay += double / 60 * wage * 1.5
+    pay = normal * wage / 60
+    pay += single * wage * 1.25 / 60
+    pay += double * wage * 1.5 / 60
 
     pays.append(pay)
+
+if len(pays) == 0:
+    error("入力がありません")
 
 if args.total:
     print(int(sum(pays)))
