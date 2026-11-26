@@ -4,4 +4,12 @@
 import sys
 
 for line in sys.stdin:
-    print(line, end="")
+    times = line.strip().split()
+
+    start = times[0].split(":")
+    end = times[1].split(":")
+
+    start_min = int(start[0]) * 60 + int(start[1])
+    end_min = int(end[0]) * 60 + int(end[1])
+
+    print(start_min, end_min)
