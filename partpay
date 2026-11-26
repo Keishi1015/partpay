@@ -3,6 +3,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 import sys
 
+wage = 1400
+total = 0
+
 for line in sys.stdin:
     times = line.strip().split()
 
@@ -12,4 +15,9 @@ for line in sys.stdin:
     start_min = int(start[0]) * 60 + int(start[1])
     end_min = int(end[0]) * 60 + int(end[1])
 
-    print(start_min, end_min)
+    work_min = end_min - start_min
+    pay = work_min / 60 * wage
+
+    total += pay
+
+print(int(total))
