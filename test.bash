@@ -170,10 +170,6 @@ out=$(echo "24:00 24:00" | ./partpay 2>/dev/null)
 [ "$?" = 1 ]     || ng "$LINENO"
 [ "${out}" = "" ] || ng "$LINENO"
 
-# 終了時刻が開始時刻より前
-out=$(echo "18:00 9:00" | ./partpay 2>/dev/null)
-[ "$?" = 1 ]     || ng "$LINENO"
-[ "${out}" = "" ] || ng "$LINENO"
 
 # 空行
 out=$(echo "" | ./partpay 2>/dev/null)
@@ -189,6 +185,57 @@ out=$(printf "9:00 10:00\nabc def\n" | ./partpay 2>/dev/null)
 out=$(echo "9:60 18:00" | ./partpay 2>&1 >/dev/null)
 [ "$?" = 1 ] || ng "$LINENO"
 [ "${out}" = "分の範囲が正しくありません" ] || ng "$LINENO"
+
+
+# 日付またぎ2時間
+out=$(echo "23:00 1:00" | ./partpay)
+[ "$?" = 0 ]       || ng "$LINENO"
+[ "${out}" = 3500 ] || ng "$LINENO"
+
+# 日付またぎ4時間
+out=$(echo "22:00 2:00" | ./partpay)
+[ "$?" = 0 ]       || ng "$LINENO"
+[ "${out}" = 7000 ] || ng "$LINENO"
+
+# 日付またぎと休憩時間
+out=$(echo "18:00 2:00" | ./partpay)
+[ "$?" = 0 ]        || ng "$LINENO"
+[ "${out}" = 11550 ] || ng "$LINENO"
+
+# 深夜時間帯のみの勤務と休憩
+out=$(echo "22:00 5:00" | ./partpay)
+[ "$?" = 0 ]        || ng "$LINENO"
+[ "${out}" = 10937 ] || ng "$LINENO"
+
+# 翌朝5時を超える勤務
+out=$(echo "23:00 6:00" | ./partpay)
+[ "$?" = 0 ]        || ng "$LINENO"
+[ "${out}" = 10850 ] || ng "$LINENO"
+
+# 日付またぎと残業割増
+out=$(echo "18:00 4:00" | ./partpay)
+[ "$?" = 0 ]        || ng "$LINENO"
+[ "${out}" = 15050 ] || ng "$LINENO"
+
+# 午前0時の境界
+out=$(echo "23:59 0:01" | ./partpay)
+[ "$?" = 0 ]     || ng "$LINENO"
+[ "${out}" = 58 ] || ng "$LINENO"
+
+# 翌朝5時の境界
+out=$(echo "23:00 5:00" | ./partpay)
+[ "$?" = 0 ]        || ng "$LINENO"
+[ "${out}" = 10500 ] || ng "$LINENO"
+
+# 開始時刻と終了時刻が同じ
+out=$(echo "9:00 9:00" | ./partpay)
+[ "$?" = 0 ]    || ng "$LINENO"
+[ "${out}" = 0 ] || ng "$LINENO"
+
+# 日付またぎを含む複数日の勤務
+out=$(printf "23:00 1:00\n22:00 2:00\n" | ./partpay)
+[ "$?" = 0 ]        || ng "$LINENO"
+[ "${out}" = 10500 ] || ng "$LINENO"
 
 [ "${res}" = 0 ] && echo OK
 exit $res

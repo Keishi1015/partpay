@@ -38,6 +38,7 @@ def to_minutes(time):
 
 
 def is_night(minute):
+    minute = minute % (24 * 60)
     return minute >= 22 * 60 or minute < 5 * 60
 
 
@@ -91,7 +92,7 @@ for line in sys.stdin:
         error("開始時刻は24時未満にしてください")
 
     if end_min < start_min:
-        error("終了時刻が開始時刻より前です")
+        end_min += 24 * 60
 
     span = end_min - start_min
 
