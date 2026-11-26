@@ -79,5 +79,50 @@ out=$(printf "9:00 19:00\n9:00 20:00\n" | ./partpay)
 [ "$?" = 0 ]        || ng "$LINENO"
 [ "${out}" = 27650 ] || ng "$LINENO"
 
+# 深夜勤務なし
+out=$(echo "21:00 22:00" | ./partpay)
+[ "$?" = 0 ]       || ng "$LINENO"
+[ "${out}" = 1400 ] || ng "$LINENO"
+
+# 深夜勤務1時間
+out=$(echo "22:00 23:00" | ./partpay)
+[ "$?" = 0 ]       || ng "$LINENO"
+[ "${out}" = 1750 ] || ng "$LINENO"
+
+# 通常勤務と深夜勤務
+out=$(echo "21:00 23:00" | ./partpay)
+[ "$?" = 0 ]       || ng "$LINENO"
+[ "${out}" = 3150 ] || ng "$LINENO"
+
+# 残業と深夜勤務の重複
+out=$(echo "13:00 23:00" | ./partpay)
+[ "$?" = 0 ]        || ng "$LINENO"
+[ "${out}" = 13300 ] || ng "$LINENO"
+
+# 通常・残業・深夜勤務
+out=$(echo "12:00 24:00" | ./partpay)
+[ "$?" = 0 ]        || ng "$LINENO"
+[ "${out}" = 17150 ] || ng "$LINENO"
+
+# 早朝の深夜勤務
+out=$(echo "3:00 5:00" | ./partpay)
+[ "$?" = 0 ]       || ng "$LINENO"
+[ "${out}" = 3500 ] || ng "$LINENO"
+
+# 深夜勤務の終了時刻をまたぐ勤務
+out=$(echo "4:00 6:00" | ./partpay)
+[ "$?" = 0 ]       || ng "$LINENO"
+[ "${out}" = 3150 ] || ng "$LINENO"
+
+# 5時以降は通常勤務
+out=$(echo "5:00 6:00" | ./partpay)
+[ "$?" = 0 ]       || ng "$LINENO"
+[ "${out}" = 1400 ] || ng "$LINENO"
+
+# 深夜開始時刻の境界
+out=$(echo "21:59 22:01" | ./partpay)
+[ "$?" = 0 ]     || ng "$LINENO"
+[ "${out}" = 52 ] || ng "$LINENO"
+
 [ "${res}" = 0 ] && echo OK
 exit $res

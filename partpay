@@ -7,6 +7,47 @@ import sys
 wage = 1400
 total = 0
 
+def is_night(minute):
+    return minute >= 22 * 60 or minute < 5 * 60
+
+
+def count_minutes(start, end, rest):
+    daytime = []
+    nighttime = []
+
+    for m in range(start, end):
+        if is_night(m):
+            nighttime.append(m)
+        else:
+            daytime.append(m)
+
+    order = daytime + nighttime
+    resting = order[:rest]
+
+    normal = 0
+    single = 0
+    double = 0
+    worked = 0
+
+    for m in range(start, end):
+        if m in resting:
+            continue
+
+        overtime = worked >= 8 * 60
+        night = is_night(m)
+
+        if overtime and night:
+            double += 1
+        elif overtime or night:
+            single += 1
+        else:
+            normal += 1
+
+        worked += 1
+
+    return normal, single, double
+
+
 for line in sys.stdin:
     times = line.strip().split()
 
@@ -25,17 +66,13 @@ for line in sys.stdin:
     else:
         rest = 60
 
-    work_min = span - rest
+    normal, single, double = count_minutes(
+        start_min, end_min, rest
+    )
 
-    if work_min > 8 * 60:
-        normal_min = 8 * 60
-        overtime_min = work_min - 8 * 60
-    else:
-        normal_min = work_min
-        overtime_min = 0
-
-    pay = normal_min / 60 * wage
-    pay += overtime_min / 60 * wage * 1.25
+    pay = normal / 60 * wage
+    pay += single / 60 * wage * 1.25
+    pay += double / 60 * wage * 1.5
 
     total += pay
 
