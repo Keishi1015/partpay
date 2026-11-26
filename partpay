@@ -7,6 +7,36 @@ import sys
 wage = 1400
 total = 0
 
+
+def error(message):
+    print(message, file=sys.stderr)
+    sys.exit(1)
+
+
+def to_minutes(time):
+    parts = time.split(":")
+
+    if len(parts) != 2:
+        error("時刻の形式が正しくありません")
+
+    try:
+        hour = int(parts[0])
+        minute = int(parts[1])
+    except ValueError:
+        error("時刻は数値で入力してください")
+
+    if hour < 0 or hour > 24:
+        error("時間の範囲が正しくありません")
+
+    if minute < 0 or minute >= 60:
+        error("分の範囲が正しくありません")
+
+    if hour == 24 and minute != 0:
+        error("24時を超えています")
+
+    return hour * 60 + minute
+
+
 def is_night(minute):
     return minute >= 22 * 60 or minute < 5 * 60
 
@@ -51,11 +81,17 @@ def count_minutes(start, end, rest):
 for line in sys.stdin:
     times = line.strip().split()
 
-    start = times[0].split(":")
-    end = times[1].split(":")
+    if len(times) != 2:
+        error("開始時刻と終了時刻を入力してください")
 
-    start_min = int(start[0]) * 60 + int(start[1])
-    end_min = int(end[0]) * 60 + int(end[1])
+    start_min = to_minutes(times[0])
+    end_min = to_minutes(times[1])
+
+    if start_min == 24 * 60:
+        error("開始時刻は24時未満にしてください")
+
+    if end_min < start_min:
+        error("終了時刻が開始時刻より前です")
 
     span = end_min - start_min
 

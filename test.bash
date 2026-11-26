@@ -124,5 +124,71 @@ out=$(echo "21:59 22:01" | ./partpay)
 [ "$?" = 0 ]     || ng "$LINENO"
 [ "${out}" = 52 ] || ng "$LINENO"
 
+
+# 時刻ではない文字列
+out=$(echo "abc def" | ./partpay 2>/dev/null)
+[ "$?" = 1 ]     || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 時刻に文字が含まれる
+out=$(echo "a:00 18:00" | ./partpay 2>/dev/null)
+[ "$?" = 1 ]     || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 入力不足
+out=$(echo "9:00" | ./partpay 2>/dev/null)
+[ "$?" = 1 ]     || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 入力過多
+out=$(echo "9:00 18:00 19:00" | ./partpay 2>/dev/null)
+[ "$?" = 1 ]     || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 不正な分
+out=$(echo "9:60 18:00" | ./partpay 2>/dev/null)
+[ "$?" = 1 ]     || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 不正な時間
+out=$(echo "25:00 26:00" | ./partpay 2>/dev/null)
+[ "$?" = 1 ]     || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 負の時間
+out=$(echo "-1:00 18:00" | ./partpay 2>/dev/null)
+[ "$?" = 1 ]     || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 24時を超える時刻
+out=$(echo "9:00 24:01" | ./partpay 2>/dev/null)
+[ "$?" = 1 ]     || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 開始時刻が24時
+out=$(echo "24:00 24:00" | ./partpay 2>/dev/null)
+[ "$?" = 1 ]     || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 終了時刻が開始時刻より前
+out=$(echo "18:00 9:00" | ./partpay 2>/dev/null)
+[ "$?" = 1 ]     || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 空行
+out=$(echo "" | ./partpay 2>/dev/null)
+[ "$?" = 1 ]     || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 複数行の途中で不正な入力
+out=$(printf "9:00 10:00\nabc def\n" | ./partpay 2>/dev/null)
+[ "$?" = 1 ]     || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 標準エラー出力の確認
+out=$(echo "9:60 18:00" | ./partpay 2>&1 >/dev/null)
+[ "$?" = 1 ] || ng "$LINENO"
+[ "${out}" = "分の範囲が正しくありません" ] || ng "$LINENO"
+
 [ "${res}" = 0 ] && echo OK
 exit $res
