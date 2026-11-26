@@ -27,9 +27,9 @@
 以下のコマンドを実行してください。
 
 ```bash
-git clone https://github.com/Keishi1015/partpay.git
-cd partpay
-chmod +x partpay
+$ git clone https://github.com/Keishi1015/partpay.git
+$ cd partpay
+$ chmod +x partpay
 ```
 
 ## 使い方
