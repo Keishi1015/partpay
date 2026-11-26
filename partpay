@@ -2,15 +2,47 @@
 # SPDX-FileCopyrightText: 2026 Keishi Yonezawa
 # SPDX-License-Identifier: BSD-3-Clause
 
+import argparse
 import sys
-
-wage = 1400
-total = 0
 
 
 def error(message):
     print(message, file=sys.stderr)
     sys.exit(1)
+
+
+def positive_int(text):
+    try:
+        value = int(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError("時給は整数で指定してください")
+
+    if value <= 0:
+        raise argparse.ArgumentTypeError("時給は正の整数で指定してください")
+
+    return value
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        prog="partpay",
+        description="標準入力から勤務の開始・終了時刻を読み、給料を計算します。"
+    )
+
+    parser.add_argument(
+        "-w", "--wage",
+        type=positive_int,
+        default=1400,
+        help="時給（円、正の整数）。既定値は1400"
+    )
+
+    parser.add_argument(
+        "-t", "--total",
+        action="store_true",
+        help="1日ごとの給料ではなく、全日の合計を出力する"
+    )
+
+    return parser.parse_args()
 
 
 def to_minutes(time):
@@ -79,6 +111,10 @@ def count_minutes(start, end, rest):
     return normal, single, double
 
 
+args = parse_args()
+wage = args.wage
+pays = []
+
 for line in sys.stdin:
     times = line.strip().split()
 
@@ -111,6 +147,10 @@ for line in sys.stdin:
     pay += single / 60 * wage * 1.25
     pay += double / 60 * wage * 1.5
 
-    total += pay
+    pays.append(pay)
 
-print(int(total))
+if args.total:
+    print(int(sum(pays)))
+else:
+    for pay in pays:
+        print(int(pay))
