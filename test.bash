@@ -164,9 +164,6 @@ out=$(echo "23:00 5:00" | ./partpay)
 [ "$?" = 0 ] || ng "$LINENO"
 [ "${out}" = 10500 ] || ng "$LINENO"
 
-out=$(echo "9:00 9:00" | ./partpay)
-[ "$?" = 0 ] || ng "$LINENO"
-[ "${out}" = 0 ] || ng "$LINENO"
 
 out=$(printf "23:00 1:00\n22:00 2:00\n" | ./partpay -t)
 [ "$?" = 0 ] || ng "$LINENO"
@@ -218,6 +215,65 @@ out=$(./partpay -x 2>/dev/null)
 # ヘルプ
 ./partpay -h >/dev/null
 [ "$?" = 0 ] || ng "$LINENO"
+
+
+# 休憩60分
+out=$(echo "9:00 18:00 60" | ./partpay)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 11200 ] || ng "$LINENO"
+
+# 休憩90分
+out=$(echo "9:00 18:00 90" | ./partpay)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 10500 ] || ng "$LINENO"
+
+# 休憩0分
+out=$(echo "9:00 18:00 0" | ./partpay 2>/dev/null)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 12950 ] || ng "$LINENO"
+
+# 休憩30分
+out=$(echo "9:00 18:00 30" | ./partpay 2>/dev/null)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 12075 ] || ng "$LINENO"
+
+# 警告は標準エラー出力に表示
+out=$(echo "9:00 18:00 30" | ./partpay 2>&1 >/dev/null)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = "警告: 1行目: 休憩30分は法定の最低60分より短いです" ] || ng "$LINENO"
+
+# 休憩が不要な場合
+out=$(echo "9:00 15:00 0" | ./partpay 2>&1)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 8400 ] || ng "$LINENO"
+
+# 休憩45分で実労働8時間
+out=$(echo "9:00 17:45 45" | ./partpay 2>&1)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 11200 ] || ng "$LINENO"
+
+# 不正な休憩時間
+for rest in -10 abc 30.5 540 600
+do
+    out=$(echo "9:00 18:00 $rest" | ./partpay 2>/dev/null)
+    [ "$?" = 1 ] || ng "$LINENO"
+    [ "${out}" = "" ] || ng "$LINENO"
+done
+
+# 開始と終了が同じ
+out=$(echo "9:00 9:00" | ./partpay 2>/dev/null)
+[ "$?" = 1 ] || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 入力項目が多すぎる
+out=$(echo "9:00 18:00 60 30" | ./partpay 2>/dev/null)
+[ "$?" = 1 ] || ng "$LINENO"
+[ "${out}" = "" ] || ng "$LINENO"
+
+# 時給と合計オプションの併用
+out=$(printf "9:00 18:00 60\n10:00 15:00 0\n" | ./partpay -w 1500 -t)
+[ "$?" = 0 ] || ng "$LINENO"
+[ "${out}" = 19500 ] || ng "$LINENO"
 
 [ "${res}" = 0 ] && echo OK
 exit $res

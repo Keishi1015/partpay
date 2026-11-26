@@ -26,7 +26,7 @@ def positive_int(text):
 def parse_args():
     parser = argparse.ArgumentParser(
         prog="partpay",
-        description="標準入力から勤務の開始・終了時刻を読み、給料を計算します。"
+        description="標準入力から勤務の開始・終了時刻と休憩時間を読み、給料を計算します。"
     )
 
     parser.add_argument(
@@ -67,6 +67,24 @@ def to_minutes(time):
         error("24時を超えています")
 
     return hour * 60 + minute
+
+
+def default_break(span):
+    if span <= 6 * 60:
+        return 0
+    elif span <= 8 * 60 + 45:
+        return 45
+    else:
+        return 60
+
+
+def required_break(work_min):
+    if work_min <= 6 * 60:
+        return 0
+    elif work_min <= 8 * 60:
+        return 45
+    else:
+        return 60
 
 
 def is_night(minute):
@@ -114,12 +132,14 @@ def count_minutes(start, end, rest):
 args = parse_args()
 wage = args.wage
 pays = []
+lineno = 0
 
 for line in sys.stdin:
+    lineno += 1
     times = line.strip().split()
 
-    if len(times) != 2:
-        error("開始時刻と終了時刻を入力してください")
+    if len(times) != 2 and len(times) != 3:
+        error("開始時刻 終了時刻 [休憩時間] の形式で入力してください")
 
     start_min = to_minutes(times[0])
     end_min = to_minutes(times[1])
@@ -132,12 +152,25 @@ for line in sys.stdin:
 
     span = end_min - start_min
 
-    if span <= 6 * 60:
-        rest = 0
-    elif span <= 8 * 60 + 45:
-        rest = 45
+    if len(times) == 3:
+        if not (times[2].isascii() and times[2].isdigit()):
+            error("休憩は0以上の整数（分）で指定してください")
+
+        rest = int(times[2])
     else:
-        rest = 60
+        rest = default_break(span)
+
+    if rest >= span:
+        error("休憩が拘束時間以上です")
+
+    work_min = span - rest
+    required = required_break(work_min)
+
+    if rest < required:
+        print(
+            f"警告: {lineno}行目: 休憩{rest}分は法定の最低{required}分より短いです",
+            file=sys.stderr
+        )
 
     normal, single, double = count_minutes(
         start_min, end_min, rest
