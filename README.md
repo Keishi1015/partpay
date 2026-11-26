@@ -282,3 +282,10 @@ GitHub Actionsを使用して、以下の環境で自動テストを実行する
 
 GitHubへのプッシュ時に自動テストが実行されます。
 テスト結果はREADME上部のバッジから確認できます。
+
+## ライセンス
+
+- このソフトウェアは、BSD 3-Clause Licenseの下で公開されています。
+- 詳細については[LICENSE](LICENSE)を参照してください。
+
+© 2026 Keishi Yonezawa
